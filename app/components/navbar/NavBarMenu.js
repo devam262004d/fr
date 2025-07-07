@@ -26,17 +26,18 @@ export default function NavBarMenu() {
   }, []);
 
   useEffect(() => {
-    verifyToken().then((res) => {
-      console.log(res)
-      if (res.success) {
-        console.log("success")
-      }
-      if (res.success) {
-        dispatch(setUserId(res.user));
-      } else {
-        console.log("Token verification failed:", res);
-      }
-    });
+    const timer = setTimeout(() => {
+      verifyToken().then((res) => {
+        console.log(res);
+        if (res.success) {
+          dispatch(setUserId(res.user));
+        } else {
+          console.log("Token verification failed:", res);
+        }
+      });
+    }, 200); // 200ms delay is often enough
+
+    return () => clearTimeout(timer);
   }, []);
 
   const userId = useSelector((state) => state.auth.userId);
