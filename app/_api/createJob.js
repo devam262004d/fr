@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000/api/interviewJob";
+const BASE_URL = "https://interviewserver-9r70.onrender.com/api/interviewJob";
 
 
 export const createInterviewJob = async (formData) => {
