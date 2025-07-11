@@ -9,4 +9,7 @@ html, body {
 *, *::before, *::after {
   box-sizing: border-box;
 }
-
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c0c0c0 #f1f1f1;
+}

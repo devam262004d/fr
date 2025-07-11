@@ -16,6 +16,9 @@ import { getJobs } from "../../_api/createJob";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import debounce from "lodash.debounce";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import toast from "react-hot-toast";
+
 
 export default function AllJob() {
     const [mounted, setMounted] = useState(false);
@@ -35,6 +38,11 @@ export default function AllJob() {
         })
     };
 
+   const handleCopy = (text) => {
+  navigator.clipboard.writeText(text).then(() => {
+    toast.success("Copied to clipboard!")
+  });
+};
     useEffect(() => {
         fetchJobs();
     }, [page]);
@@ -72,7 +80,7 @@ export default function AllJob() {
 
 
     const handleChangeStatus = (e) => {
-         const value = e.target.value;
+        const value = e.target.value;
         setStatus(value);
         debouncedStatus(value);
     }
@@ -252,9 +260,8 @@ export default function AllJob() {
                     {
                         jobs.map((item, index) => {
                             return (
-                                <Grid key={index} item size={{ xs: 12, sm: 6, md: 4 }}>
+                                <Grid key={index} item xs={12} sm={6} md={4}>
                                     <Box
-
                                         sx={{
                                             backgroundColor: "#f9fafb",
                                             p: 2,
@@ -265,12 +272,34 @@ export default function AllJob() {
                                     >
                                         <Box mb={1}>
                                             <Typography fontWeight="bold">{item.jobTitle}</Typography>
-                                            <Typography>Interview Code: {item.interviewCode}</Typography>
-                                            <Typography>Password: {item.password}</Typography>
+
+                                            <Box display="flex" alignItems="center" gap={1}>
+                                                <Typography>Interview Code: {item.interviewCode}</Typography>
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => handleCopy(item.interviewCode)}
+                                                    aria-label="Copy Interview Code"
+                                                >
+                                                    <ContentCopyIcon fontSize="small" />
+                                                </IconButton>
+                                            </Box>
+
+                                            <Box display="flex" alignItems="center" gap={1}>
+                                                <Typography>Password: {item.password}</Typography>
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => handleCopy(item.password)}
+                                                    aria-label="Copy Password"
+                                                >
+                                                    <ContentCopyIcon fontSize="small" />
+                                                </IconButton>
+                                            </Box>
+
                                             <Typography>
                                                 Scheduled At: {new Date(item.scheduledAt).toLocaleString()}
                                             </Typography>
                                         </Box>
+
                                         <Box display="flex" gap={1}>
                                             <Button variant="outlined" color="primary">Join</Button>
                                             <Button variant="outlined" color="secondary">Edit</Button>
@@ -278,6 +307,7 @@ export default function AllJob() {
                                         </Box>
                                     </Box>
                                 </Grid>
+
                             );
                         })
                     }

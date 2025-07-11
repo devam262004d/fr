@@ -1,4 +1,4 @@
-const BASE_URL = "https://interviewserver-9r70.onrender.com/api/interviewJob";
+const BASE_URL = "http://localhost:5000/api/interviewJob";
 
 
 export const createInterviewJob = async (formData) => {
@@ -14,6 +14,18 @@ export const createInterviewJob = async (formData) => {
   return data;
 };
 
+export const updateResumeText = async (formDataa) => {
+  const res = await fetch(`${BASE_URL}/updateResumeText`, {
+    method: "POST",
+    body: formDataa,
+    credentials: "include",
+    headers: {
+      "Accept": "application/json"
+    }
+  });
+
+  return res.json(); 
+};
 
 
 export const getJobs =  async(page=1, limit=10, query="", status="")=>{
@@ -27,5 +39,19 @@ export const getJobs =  async(page=1, limit=10, query="", status="")=>{
   if(!res.ok) throw new Error(data.message);
   return data;
 }
+
+
+export const analyzeresume = async (formData) => {
+  const res = await fetch(`${BASE_URL}/analyzeresume`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(formData),
+    credentials: "include",
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
 
 
