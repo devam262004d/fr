@@ -32,7 +32,7 @@ const Navbar = () => {
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Typography variant='h6' sx={{ fontWeight: 'bold', color: 'black' }}>
-                INTERVIEW
+                Interview
               </Typography>
               <NavBarMenu />
             </Box>

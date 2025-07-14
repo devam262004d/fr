@@ -55,3 +55,15 @@ export const analyzeresume = async (formData) => {
 };
 
 
+export const audioToText = async (formDataa) => {
+  const res = await fetch(`${BASE_URL}/audioToText`, {
+    method: "POST",
+    body: formDataa,
+    credentials: "include",
+    headers: {
+      "Accept": "application/json"
+    }
+  });
+
+  return res.json(); 
+};

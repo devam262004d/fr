@@ -13,7 +13,7 @@ import DesktopWindowsIcon from '@mui/icons-material/DesktopWindows';
 import VideocamOffIcon from '@mui/icons-material/VideocamOff';
 import MicOffIcon from '@mui/icons-material/MicOff';
 import Note from "../../../components/interviewerCall/Note";
-import { analyzeresume } from "../../../_api/createJob";
+import { analyzeresume, audioToText } from "../../../_api/createJob";
 import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
@@ -29,7 +29,9 @@ export default function InterviewerCall() {
   const peerRef = useRef(null);
   const hasJoinedRef = useRef(false);
   const localStreamRef = useRef(null);
-
+  const RemoteStreamRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const chunksRef = useRef([]);
 
 
   useEffect(() => {
@@ -70,7 +72,7 @@ export default function InterviewerCall() {
       }
     };
 
-    const handleUserDisconnected = async ({message})=>{
+    const handleUserDisconnected = async ({ message }) => {
       console.log("user dissconnected")
       toast.error(message)
     }
@@ -110,6 +112,7 @@ export default function InterviewerCall() {
           if (remoteVideo && !remoteVideo.srcObject) {
             remoteVideo.srcObject = event.streams[0];
           }
+          RemoteStreamRef.current = event.streams[0];
         };
 
       } catch (err) {
@@ -234,6 +237,76 @@ export default function InterviewerCall() {
     });
   }
 
+
+  const startRecording = async () => {
+    if (!localStreamRef.current || !RemoteStreamRef.current) {
+      toast.error("Streams not ready");
+      return;
+    }
+
+    const localTracks = localStreamRef.current.getAudioTracks();
+    const remoteTracks = RemoteStreamRef.current.getAudioTracks();
+
+    console.log("Local audio tracks:", localTracks);
+    console.log("Remote audio tracks:", remoteTracks);
+
+    if (!localTracks.length && !remoteTracks.length) {
+      toast.error("No audio tracks found");
+      return;
+    }
+
+    const combinedStream = new MediaStream([...localTracks, ...remoteTracks]);
+    const mediaRecorder = new MediaRecorder(combinedStream, {
+      mimeType: "audio/webm",
+    });
+
+    mediaRecorder.ondataavailable = (e) => {
+      chunksRef.current.push(e.data);
+      console.log(chunksRef.current);
+    };
+
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+      const formData = new FormData();
+        formData.append("audio", blob, `interview-audio-${Date.now()}.webm`);
+        audioToText(formData);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = `interview-audio-${Date.now()}.webm`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+    };
+
+    mediaRecorder.start(1000);
+    mediaRecorderRef.current = mediaRecorder;
+    toast.success("Recording start!")
+  };
+
+
+
+
+
+  const stopRecording = () => {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.stop();
+      toast.success("Recording stopped and downloading...");
+    } else {
+      toast.error("No recording is in progress");
+    }
+  };
+
+
+
+
+
+
+
+
   return (
 
     <Box sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 1 }}>
@@ -294,7 +367,7 @@ export default function InterviewerCall() {
         </Box>
 
         <Button
-        onClick={stopStream}
+          onClick={stopStream}
           variant="contained"
           startIcon={<LocalPhoneIcon />}
           sx={{
@@ -649,8 +722,8 @@ export default function InterviewerCall() {
                   </Box>
                 </Box>
               ) : (
-                <Box sx={{mt:2,mb:2, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", gap: 2 }}>
-                  <TroubleshootIcon sx={{fontSize:{xs:60}}} />
+                <Box sx={{ mt: 2, mb: 2, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", gap: 2 }}>
+                  <TroubleshootIcon sx={{ fontSize: { xs: 60 } }} />
                   <Typography color="gray" textAlign="center">
                     Click "Resume Analyze" to generate analysis.
                   </Typography>
@@ -708,18 +781,20 @@ export default function InterviewerCall() {
                     </Box>
                   </Box>
                 ) : (
-                  <Box sx={{mt:2,mb:2, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", gap: 2 }}>
-                  <CycloneIcon sx={{fontSize:{xs:60}}} />
-                  <Typography color="gray" textAlign="center">
-                    Click "Resume Analyze" to generate questions.
-                  </Typography>
-                </Box>
+                  <Box sx={{ mt: 2, mb: 2, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", gap: 2 }}>
+                    <CycloneIcon sx={{ fontSize: { xs: 60 } }} />
+                    <Typography color="gray" textAlign="center">
+                      Click "Resume Analyze" to generate questions.
+                    </Typography>
+                  </Box>
                 )
               }
             </Box>
           </Box>
         </Box>
       </Box>
+      <Button onClick={startRecording}>RECORDEREINFERIFIRF</Button>
+      <Button onClick={stopRecording}>stop</Button>
     </Box>
   );
 }
