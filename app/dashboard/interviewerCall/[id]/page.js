@@ -18,6 +18,9 @@ import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 import CycloneIcon from '@mui/icons-material/Cyclone';
+import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
+import StopCircleIcon from '@mui/icons-material/StopCircle';
+import { useStopwatch } from "react-timer-hook";
 
 export default function InterviewerCall() {
   const { id: roomId } = useParams();
@@ -26,6 +29,7 @@ export default function InterviewerCall() {
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   const [resume, setResume] = useState(null);
+  const [isRecord, setIsRecord] = useState(false);
   const peerRef = useRef(null);
   const hasJoinedRef = useRef(false);
   const localStreamRef = useRef(null);
@@ -33,6 +37,16 @@ export default function InterviewerCall() {
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
 
+
+  const { seconds, minutes, hours, isRunning, start, pause } = useStopwatch({ autoStart: false });
+  const [totalTime, setTotalTime] = useState(null);
+
+  const handleStop = () => {
+    pause();
+    const timeInSeconds = hours * 3600 + minutes * 60 + seconds;
+    setTotalTime(timeInSeconds); // Store in variable
+    console.log("Total Time:", timeInSeconds, "seconds");
+  };
 
   useEffect(() => {
     const errorHandler = ({ message }) => {
@@ -155,7 +169,7 @@ export default function InterviewerCall() {
 
   const stopStream = () => {
     if (!isStreamActive) return;
-
+    console.log("hi")
     try {
       // Stop media tracks
       if (localStreamRef.current) {
@@ -178,8 +192,7 @@ export default function InterviewerCall() {
       }
 
       // Notify server
-      socket.emit("leave-room", { roomId });
-      socket.emit("end-call", { roomId });
+      socket.emit("end-room", roomId);
 
       // Update state
       setIsStreamActive(false);
@@ -187,7 +200,7 @@ export default function InterviewerCall() {
       setIsMicOn(false);
 
       // Redirect
-      router.push("/");
+      router.push(`/dashboard/performance/${roomId}`);
 
       toast.success("Call ended successfully");
     } catch (err) {
@@ -240,10 +253,10 @@ export default function InterviewerCall() {
 
   const startRecording = async () => {
     if (!localStreamRef.current || !RemoteStreamRef.current) {
-      toast.error("Streams not ready");
+      toast.error("Candidate did not join the session.");
       return;
     }
-
+    start();
     const localTracks = localStreamRef.current.getAudioTracks();
     const remoteTracks = RemoteStreamRef.current.getAudioTracks();
 
@@ -268,43 +281,44 @@ export default function InterviewerCall() {
     mediaRecorder.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: "audio/webm" });
       const formData = new FormData();
-        formData.append("audio", blob, `interview-audio-${Date.now()}.webm`);
-        audioToText(formData);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.style.display = "none";
-      a.href = url;
-      a.download = `interview-audio-${Date.now()}.webm`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 100);
+      formData.append("audio", blob, `interview-audio-${Date.now()}.webm`);
+      formData.append("roomId", roomId);
+      formData.append("totalTime", totalTime);
+      audioToText(formData).then((res) => {
+        console.log("heloo rbfeoeefhnefefnefen")
+        console.log(res);
+      })
+      setIsRecord(false);
+      // const url = URL.createObjectURL(blob);
+      // const a = document.createElement("a");
+      // a.style.display = "none";
+      // a.href = url;
+      // a.download = `interview-audio-${Date.now()}.webm`;
+      // document.body.appendChild(a);
+      // a.click();
+      // document.body.removeChild(a);
+      // setTimeout(() => URL.revokeObjectURL(url), 100);
     };
 
     mediaRecorder.start(1000);
     mediaRecorderRef.current = mediaRecorder;
     toast.success("Recording start!")
+    setIsRecord(true)
   };
-
-
-
 
 
   const stopRecording = () => {
     const recorder = mediaRecorderRef.current;
     if (recorder && recorder.state !== "inactive") {
       recorder.stop();
-      toast.success("Recording stopped and downloading...");
+      toast.success("Recording stopped!");
+      pause();
+      const timeInSeconds = hours * 3600 + minutes * 60 + seconds;
+      setTotalTime(timeInSeconds); // Store in variable
     } else {
       toast.error("No recording is in progress");
     }
   };
-
-
-
-
-
-
 
 
   return (
@@ -365,27 +379,34 @@ export default function InterviewerCall() {
             Live Interview Session
           </Typography>
         </Box>
+        <Box sx={{ display: "flex", flexDirection: { md: "row", xs: "column" }, alignItems: "center", gap: 1 }}>
+          <Typography sx={{ fontSize: { xs: "0.6rem", md: "0.8rem" } }}>
+            {hours.toString().padStart(2, '0')}:
+            {minutes.toString().padStart(2, '0')}:
+            {seconds.toString().padStart(2, '0')}
+          </Typography>
+          <Button
+            onClick={stopStream}
+            variant="contained"
+            startIcon={<LocalPhoneIcon />}
+            sx={{
+              backgroundColor: "black",
+              color: "white",
+              fontWeight: "bold",
+              borderRadius: 2,
+              textTransform: "none",
+              fontSize: { xs: "0.75rem", sm: "0.875rem", md: "1rem" },
+              px: { xs: 1.5, sm: 2.5 },
+              py: { xs: 0.5, sm: 1 },
+              "&:hover": {
+                backgroundColor: "#333",
+              },
+            }}
+          >
+            End Interview
+          </Button>
+        </Box>
 
-        <Button
-          onClick={stopStream}
-          variant="contained"
-          startIcon={<LocalPhoneIcon />}
-          sx={{
-            backgroundColor: "black",
-            color: "white",
-            fontWeight: "bold",
-            borderRadius: 2,
-            textTransform: "none",
-            fontSize: { xs: "0.75rem", sm: "0.875rem", md: "1rem" },
-            px: { xs: 1.5, sm: 2.5 },
-            py: { xs: 0.5, sm: 1 },
-            "&:hover": {
-              backgroundColor: "#333",
-            },
-          }}
-        >
-          End Interview
-        </Button>
       </Box>
       <Box
         sx={{
@@ -596,6 +617,51 @@ export default function InterviewerCall() {
                       }}
                     />
                   </IconButton>
+                  {
+                    isRecord ? (
+                      <IconButton
+                        onClick={stopRecording}
+                        sx={{
+                          backgroundColor: isCameraOn ? "#e5e7eb" : "#d1d5db",
+                          backgroundColor: "#e5e7eb",
+                          p: 0.5,
+                          borderRadius: "50%",
+                          width: "40px",
+                          height: "40px",
+                          '&:hover': {
+                            backgroundColor: "#d1d5db",
+                          },
+                        }}
+                      >
+                        <StopCircleIcon
+                          sx={{
+                            fontSize: "clamp(20px, 4vw, 32px)",
+                            color: "red",
+                          }}
+                        />
+                      </IconButton>
+                    ) : (
+                      <IconButton
+                        onClick={startRecording}
+                        sx={{
+                          backgroundColor: isCameraOn ? "#e5e7eb" : "#d1d5db",
+                          backgroundColor: "#e5e7eb",
+                          p: 0.5,
+                          borderRadius: "50%",
+                          width: "40px",
+                          height: "40px",
+                          '&:hover': {
+                            backgroundColor: "#d1d5db",
+                          },
+                        }}
+                      >
+                        <RadioButtonCheckedIcon sx={{
+                          fontSize: "clamp(20px, 4vw, 32px)",
+                          color: "#374151",
+                        }} />
+                      </IconButton>
+                    )
+                  }
                 </Box>
               </Box>
             </Box>
@@ -751,50 +817,50 @@ export default function InterviewerCall() {
                     maxHeight: "190px",
                     overflowY: "auto",
                   }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "center",
-                        width: "100%",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      {
-                        resume.interview_questions.map((question, index) => {
-                          return (
-                            <>
-                              <Typography key={index} sx={{ fontWeight: "bold", color: "#1f2937" }}>
-                                Question {index + 1}
-                              </Typography>
-                              <Typography sx={{
-                                fontSize: { xs: "0.7rem", md: "0.8rem", sm: "0.8rem" },
-                                fontWeight: "normal",
-                                color: "#747b7a",
-                              }}>
-                                {question}
-                              </Typography>
-                            </>
-                          )
-                        })
-                      }
-                    </Box>
+
+                    {
+                      resume.interview_questions.map((question, index) => {
+                        return (
+                          
+                            <Box
+                            key={index}
+                              sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "center",
+                                width: "100%",
+                                flexWrap: "wrap",
+                              }}
+                            >
+                            <Typography key={index} sx={{ fontWeight: "bold", color: "#1f2937" }}>
+                              Question {index + 1}
+                            </Typography>
+                            <Typography sx={{
+                              fontSize: { xs: "0.7rem", md: "0.8rem", sm: "0.8rem" },
+                              fontWeight: "normal",
+                              color: "#747b7a",
+                            }}>
+                              {question}
+                            </Typography>
+                          </Box>
+                        )
+                      })
+                    }
                   </Box>
-                ) : (
-                  <Box sx={{ mt: 2, mb: 2, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", gap: 2 }}>
-                    <CycloneIcon sx={{ fontSize: { xs: 60 } }} />
-                    <Typography color="gray" textAlign="center">
-                      Click "Resume Analyze" to generate questions.
-                    </Typography>
-                  </Box>
-                )
-              }
+            ) : (
+            <Box sx={{ mt: 2, mb: 2, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", gap: 2 }}>
+              <CycloneIcon sx={{ fontSize: { xs: 60 } }} />
+              <Typography color="gray" textAlign="center">
+                Click "Resume Analyze" to generate questions.
+              </Typography>
             </Box>
+            )
+              }
           </Box>
         </Box>
       </Box>
-      <Button onClick={startRecording}>RECORDEREINFERIFIRF</Button>
-      <Button onClick={stopRecording}>stop</Button>
     </Box>
+
+    </Box >
   );
 }

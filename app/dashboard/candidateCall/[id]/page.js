@@ -13,6 +13,8 @@ import KeyboardVoiceIcon from '@mui/icons-material/KeyboardVoice';
 import DesktopWindowsIcon from '@mui/icons-material/DesktopWindows';
 import VideocamOffIcon from '@mui/icons-material/VideocamOff';
 import MicOffIcon from '@mui/icons-material/MicOff';
+import { useSelector } from "react-redux";
+
 
 export default function CandidateCall() {
     const { id: roomId } = useParams();
@@ -20,7 +22,7 @@ export default function CandidateCall() {
     const [isCameraOn, setIsCameraOn] = useState(true);
     const [isMicOn, setIsMicOn] = useState(true);
     const [isCallActive, setIsCallActive] = useState(false);
-
+    const userId =  useSelector((state) => state.auth.userId);
     const hasJoinedRef = useRef(false);
     const peerRef = useRef(null);
     const offerBufferRef = useRef(null);
@@ -28,7 +30,7 @@ export default function CandidateCall() {
 
     useEffect(() => {
         if (!hasJoinedRef.current) {
-            socket.emit("join-room", { roomId, role: "Candidate" });
+            socket.emit("join-room", { roomId, role: "Candidate" , userId});
             hasJoinedRef.current = true;
         }
     }, [roomId]);
@@ -104,7 +106,7 @@ export default function CandidateCall() {
             }
 
             try {
-                console.log("📩 Received offer");
+                console.log("Received offer");
                 await peerRef.current.setRemoteDescription(new RTCSessionDescription(offer));
                 const answer = await peerRef.current.createAnswer();
                 await peerRef.current.setLocalDescription(answer);
@@ -219,6 +221,7 @@ export default function CandidateCall() {
     };
 
 
+
     const blink = keyframes`
   0% { opacity: 1; }
   50% { opacity: 0.2; }
@@ -227,64 +230,6 @@ export default function CandidateCall() {
 
 
     return (
-        // <div style={{ textAlign: "center", padding: "2rem" }}>
-        //     <h2>🎙️ Candidate</h2>
-        //     <div style={{ display: "flex", justifyContent: "center", marginBottom: "1rem" }}>
-        //         <video
-        //             id="localVideo"
-        //             autoPlay
-        //             muted
-        //             playsInline
-        //             style={{
-        //                 width: "45%",
-        //                 marginRight: "1rem",
-        //                 border: isCameraOn ? "3px solid green" : "3px solid red"
-        //             }}
-        //         />
-        //         <video
-        //             id="remoteVideo"
-        //             autoPlay
-        //             playsInline
-        //             style={{
-        //                 width: "45%",
-        //                 border: "3px solid blue"
-        //             }}
-        //         />
-        //     </div>
-        //     <div style={{ marginTop: "1rem" }}>
-        //         <button
-        //             onClick={toggleCamera}
-        //             style={{
-        //                 margin: "0 0.5rem",
-        //                 backgroundColor: isCameraOn ? "#4CAF50" : "#f44336",
-        //                 color: "white"
-        //             }}
-        //         >
-        //             {isCameraOn ? "Turn Off Camera" : "Turn On Camera"}
-        //         </button>
-        //         <button
-        //             onClick={toggleMic}
-        //             style={{
-        //                 margin: "0 0.5rem",
-        //                 backgroundColor: isMicOn ? "#4CAF50" : "#f44336",
-        //                 color: "white"
-        //             }}
-        //         >
-        //             {isMicOn ? "Mute Mic" : "Unmute Mic"}
-        //         </button>
-        //         <button
-        //             onClick={stopStream}
-        //             style={{
-        //                 margin: "0 0.5rem",
-        //                 backgroundColor: "#ff4444",
-        //                 color: "white",
-        //                 fontWeight: "bold"
-        //             }}
-        //         >
-        //             Leave Call
-        //         </button>
-        //     </div>
-        // </div>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1, width: "100%" }}>
             <Box
                 sx={{
@@ -343,7 +288,7 @@ export default function CandidateCall() {
                 </Box>
 
                 <Button
-                 onClick={stopStream}
+                    onClick={stopStream}
                     variant="contained"
                     startIcon={<LocalPhoneIcon />}
                     sx={{
@@ -363,13 +308,13 @@ export default function CandidateCall() {
                     End Interview
                 </Button>
             </Box>
-            <Box sx={{ backgroundColor: "#f9fafb",p:1, borderRadius:2 }}>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1, p: 1, border:"1px solid #e5e7eb", borderRadius:2, backgroundColor:"white" }}>
-                    <Box sx={{ display: "flex", flexDirection: "row", gap: 1 , width:"100%"}}>
+            <Box sx={{ backgroundColor: "#f9fafb", p: 1, borderRadius: 2 }}>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1, p: 1, border: "1px solid #e5e7eb", borderRadius: 2, backgroundColor: "white" }}>
+                    <Box sx={{ display: "flex", flexDirection: "row", gap: 1, width: "100%" }}>
                         <Box
                             sx={{
                                 flex: 1,
-                                width:"50%",
+                                width: "50%",
                                 height: { xs: "25vh", sm: "35vh", md: "55vh" },
                                 backgroundColor: "#1f2937",
                                 borderRadius: 2,
@@ -382,7 +327,7 @@ export default function CandidateCall() {
                             <video
                                 autoPlay
                                 playsInline
-                                 id="remoteVideo"
+                                id="remoteVideo"
                                 style={{
                                     width: "100%",
                                     height: "100%",
@@ -395,7 +340,7 @@ export default function CandidateCall() {
                         <Box
                             sx={{
                                 flex: 1,
-                              width:"50%",
+                                width: "50%",
                                 height: { xs: "25vh", sm: "35vh", md: "55vh" },
                                 backgroundColor: "#1f2937",
                                 borderRadius: 2,
@@ -437,7 +382,7 @@ export default function CandidateCall() {
                     >
                         {isCameraOn ? (
                             <IconButton
-                               onClick={toggleCamera}
+                                onClick={toggleCamera}
                                 sx={{
                                     backgroundColor: "#e5e7eb",
                                     p: 0.5,
@@ -458,7 +403,7 @@ export default function CandidateCall() {
                             </IconButton>
                         ) : (
                             <IconButton
-                               onClick={toggleCamera}
+                                onClick={toggleCamera}
                                 sx={{
                                     backgroundColor: "#e5e7eb",
                                     p: 0.5,

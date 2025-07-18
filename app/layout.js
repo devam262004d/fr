@@ -16,19 +16,19 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <Providers>
+        <Providers >
           <Box
             sx={{
-              minHeight: '100vh',
               display: 'flex',
               flexDirection: 'column',
+              overflowY:"scroll"
             }}
           >
             <Navbar />
             <Toolbar />
 
 
-            <Box component="main" sx={{ flex: 1 }}>
+            <Box component="main" sx={{ flex: 1,  }}>
               {children}
             </Box>
             <Toaster position="top-center" reverseOrder={false} />

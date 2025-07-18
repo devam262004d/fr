@@ -1,4 +1,4 @@
-const BASE_URL = "https://interviewserver-9r70.onrender.com/api/auth";
+const BASE_URL = "http://localhost:5000/api/auth";
 
 
 

@@ -1,7 +1,7 @@
 // Only create one socket connection
 import { io } from "socket.io-client";
 
-const socket = io("https://interviewserver-9r70.onrender.com/", {
+const socket = io("http://localhost:5000", {
   autoConnect: false,
 });
 

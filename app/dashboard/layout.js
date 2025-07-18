@@ -51,17 +51,6 @@ export default function DashboardLayout({ children }) {
                 </svg>
             ),
         },
-        {
-            path: "/dashboard/performance",
-            icon: (
-                <svg style={{ color: "inherit" }} width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                        d="M17 4a1 1 0 1 1 0-2h4a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V5.414l-5.793 5.793a1 1 0 0 1-1.414 0L10 8.414l-5.293 5.293a1 1 0 0 1-1.414-1.414l6-6a1 1 0 0 1 1.414 0L13.5 9.086 18.586 4H17ZM5 18v3a1 1 0 1 1-2 0v-3a1 1 0 1 1 2 0Zm5-4a1 1 0 1 0-2 0v7a1 1 0 1 0 2 0v-7Zm4 1a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0v-5a1 1 0 0 1 1-1Zm6-4a1 1 0 1 0-2 0v10a1 1 0 1 0 2 0V11Z"
-                        fill="currentColor"
-                    />
-                </svg>
-            ),
-        },
           {
             path: "/dashboard",
             icon: (
@@ -102,7 +91,7 @@ export default function DashboardLayout({ children }) {
     const navLink =
         role === "Candidate"
             ? allLinks.slice(5)
-            : allLinks.slice(0, 5);
+            : allLinks.slice(0, 4);
 
     const pathName = usePathname();
 
@@ -118,7 +107,7 @@ export default function DashboardLayout({ children }) {
     }
 
     return (
-        <Box sx={{ display: "flex", height: "100vh", width: "100%", flexDirection: "row", gap: 1 }}>
+        <Box sx={{ display: "flex", height: "100vh", width: "100%", flexDirection: "row", gap: 1, }}>
             <Box
                 sx={{
                     width: { md: "60px", sm: "55px", xs: "40px" },
@@ -142,8 +131,7 @@ export default function DashboardLayout({ children }) {
                                         boxShadow: isActive ? "0 4px 12px rgba(0, 0, 0, 0.08)" : "none",
                                         width: "100%",
                                         justifyContent: "center",
-                                        borderRadius: 0,
-                                        // padding: "8px 12px",          
+                                        borderRadius: 0,         
                                         transition: "all 0.3s ease",
                                         color: isActive ? "white" : "black",
                                     }}
@@ -160,14 +148,14 @@ export default function DashboardLayout({ children }) {
             <Box
                 sx={{
                     width: "100%",
-                    pr: 2,
+                    pr:{xs:1, md:0},
                     pt: 2,
                     overflowY: "auto",
-                    scrollbarWidth: "none",          // Firefox
+                    scrollbarWidth: "none",          
                     "&::-webkit-scrollbar": {
-                        display: "none",             // Chrome, Safari
+                        display: "none",             
                     },
-                    msOverflowStyle: "none",         // IE and Edge
+                    msOverflowStyle: "none",        
                 }}
             >
                 {children}

@@ -47,7 +47,7 @@ useEffect(() => {
     );
   }
   return (
-    <div>
+    <Box >
       {
         userType == "Candidate"
           ? (
@@ -57,6 +57,6 @@ useEffect(() => {
             <AdminDashboard />
           )
       }
-    </div>
+    </Box>
   )
 }
